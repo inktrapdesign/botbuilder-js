@@ -193,10 +193,10 @@ export class QnAMaker {
      * @param top (Optional) number of answers to return. Defaults to a value of `1`.
      * @param scoreThreshold (Optional) minimum answer score needed to be considered a match to questions. Defaults to a value of `0.001`.
      */
-    public generateAnswer(question: string|undefined, top?: number, scoreThreshold?: number): Promise<QnAMakerResult[]> {
+    public generateAnswer(question: string|undefined, top?: number, scoreThreshold?: number, strictFilters?: any): Promise<QnAMakerResult[]> {
         const q: string = question ? question.trim() : '';
         if (q.length > 0) {
-            return this.callService(this.endpoint, question, typeof top === 'number' ? top : 1).then((answers: QnAMakerResult[]) => {
+            return this.callService(this.endpoint, question, typeof top === 'number' ? top : 1, strictFilters).then((answers: QnAMakerResult[]) => {
                 const minScore: number = typeof scoreThreshold === 'number' ? scoreThreshold : 0.001;
 
                 return answers.filter(
@@ -216,7 +216,7 @@ export class QnAMaker {
      * @remarks
      * This is exposed to enable better unit testing of the service.
      */
-    protected callService(endpoint: QnAMakerEndpoint, question: string, top: number): Promise<QnAMakerResult[]> {
+    protected callService(endpoint: QnAMakerEndpoint, question: string, top: number, strictFilters: any): Promise<QnAMakerResult[]> {
         const url: string = `${endpoint.host}/knowledgebases/${endpoint.knowledgeBaseId}/generateanswer`;
         const headers: any = {};
         if (endpoint.host.endsWith('v2.0') || endpoint.host.endsWith('v3.0')) {
@@ -231,7 +231,8 @@ export class QnAMaker {
             headers: headers,
             json: {
                 question: question,
-                top: top
+                top: top,
+                strictFilters: strictFilters,
             }
         }).then((result: any) => {
             return result.answers.map((ans: any) => {
